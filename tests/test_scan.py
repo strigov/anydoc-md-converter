@@ -121,3 +121,44 @@ def test_plan_marks_images(tmp_path):
     img = touch(tmp_path / "scan.png")
     tasks, _ = plan_tasks([(img, None)], "beside", "_md", 100, 0, image_extensions=(".png",))
     assert tasks[0].kind == "image" and tasks[0].dst.name == "scan.md"
+
+
+def test_image_size_headers():
+    import struct
+    from anydoc_md.embedded import image_size
+    png = b"\x89PNG\r\n\x1a\n" + b"\x00\x00\x00\x0dIHDR" + struct.pack(">II", 640, 480) + b"\x00" * 8
+    assert image_size(png) == (640, 480)
+    gif = b"GIF89a" + struct.pack("<HH", 12, 34)
+    assert image_size(gif) == (12, 34)
+    jpeg = b"\xff\xd8\xff\xe0" + struct.pack(">H", 16) + b"JFIF\x00" + b"\x00" * 9 + b"\xff\xc0" + struct.pack(">H", 17) + b"\x08" + struct.pack(">HH", 300, 400)
+    assert image_size(jpeg) == (400, 300)
+    assert image_size(b"garbage") is None
+
+
+def test_extract_images_from_docx():
+    from anydoc_md.embedded import extract_images
+    fx = Path(__file__).parent / "fixtures" / "embedded.docx"
+    imgs = extract_images(fx, 300, 10)
+    assert len(imgs) == 1 and imgs[0].media_type == "image/png" and imgs[0].path.exists()
+    assert imgs[0].width >= 300
+    assert extract_images(fx, 5000, 10) == []  # порог отсекает
+    import shutil; shutil.rmtree(imgs[0].path.parent, ignore_errors=True)
+
+
+def test_build_and_strip_section():
+    from anydoc_md.embedded import EmbeddedImage, build_section, strip_previous_section
+    img = EmbeddedImage(1, "word/media/image1.png", "image/png", Path("/x"), 800, 600)
+    sec = build_section("vision", [(img, "Текст со скана"), (EmbeddedImage(2, "p2", "image/png", Path("/y"), 0, 0), "")])
+    assert "## Распознанные изображения (OCR: vision)" in sec
+    assert "### Изображение 1 — word/media/image1.png, 800×600" in sec and "Текст со скана" in sec
+    assert "_текст не распознан_" in sec
+    body = "# Док\n\nтекст\n\n" + sec
+    assert strip_previous_section(body) == "# Док\n\nтекст\n\n"
+
+
+def test_demote_headings():
+    from anydoc_md.embedded import demote_headings
+    src = "## Заголовок\n\nтекст\n\n```\n## не заголовок\n```\n#### глубокий\n#нет пробела"
+    out = demote_headings(src)
+    assert out.startswith("##### Заголовок")
+    assert "\n## не заголовок\n" in out and "###### глубокий" in out and "#нет пробела" in out

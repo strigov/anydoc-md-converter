@@ -17,5 +17,6 @@ export PYTHONUNBUFFERED=1
 export UV_PYTHON_INSTALL_DIR="$APP_DIR/python"
 export ANYDOC_MD_MODELS="$APP_DIR/models"   # модели Docling (если установлен профиль docling)
 export HF_HUB_OFFLINE="${HF_HUB_OFFLINE:-1}"  # Docling не должен лезть в сеть при конвертации
+export HF_HUB_DISABLE_PROGRESS_BARS=1 TRANSFORMERS_VERBOSITY=error TQDM_DISABLE=1
 # nice 10: конвертация не должна мешать интерактивной работе
 exec /usr/bin/nice -n 10 "$PY" -m anydoc_md "$@"

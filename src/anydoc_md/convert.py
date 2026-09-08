@@ -88,8 +88,9 @@ def write_markdown(task: Task, markdown: str, source_marker: bool, via: str = ""
     return None
 
 
-def convert_one(task: Task, source_marker: bool) -> Result:
-    """Быстрый путь через anydoc. Вызывается в отдельном процессе; не бросает исключений."""
+def convert_one(task: Task, source_marker: bool, embedded: dict | None = None) -> Result:
+    """Быстрый путь через anydoc. Вызывается в отдельном процессе; не бросает исключений.
+    embedded: {"min_px": int, "max_count": int} — извлечь вложенные картинки для последующего OCR."""
     import anydoc  # импорт здесь, чтобы главный процесс мог работать и без движка
 
     t0 = time.monotonic()
@@ -129,7 +130,13 @@ def convert_one(task: Task, source_marker: bool) -> Result:
     err = write_markdown(task, markdown, source_marker)
     if err:
         return fail(err)
-    return Result(task.src, task.dst, "ok", "", time.monotonic() - t0, size, {"chars": len(markdown)})
+    extra: dict = {"chars": len(markdown)}
+    if embedded:
+        from .embedded import extract_images
+        images = extract_images(task.src, int(embedded["min_px"]), int(embedded["max_count"]))
+        if images:
+            extra["images"] = images
+    return Result(task.src, task.dst, "ok", "", time.monotonic() - t0, size, extra)
 
 
 def convert_ocr(task: Task, backend, pages: list[int], source_marker: bool) -> Result:
@@ -160,3 +167,43 @@ def convert_ocr(task: Task, backend, pages: list[int], source_marker: bool) -> R
         return Result(task.src, task.dst, "error", err, time.monotonic() - t0, size)
     return Result(task.src, task.dst, "ok", f"через OCR {backend.name}", time.monotonic() - t0, size,
                   {"chars": len(markdown), "ocr": backend.name})
+
+
+def convert_embedded(task: Task, backend, images: list, source_marker: bool) -> Result:
+    """OCR вложенных картинок уже сконвертированного документа; раздел дописывается в конец .md."""
+    import shutil
+
+    from .embedded import build_section, strip_previous_section
+    from .ocr import OcrError
+
+    t0 = time.monotonic()
+    results = []
+    failures = 0
+    for img in images:
+        try:
+            text = backend.image_to_markdown(img.path)
+        except (OcrError, Exception) as exc:  # noqa: BLE001
+            text = ""
+            failures += 1
+            results.append((img, f"_ошибка OCR: {type(exc).__name__}: {exc}_"))
+            continue
+        results.append((img, text))
+    try:
+        shutil.rmtree(images[0].path.parent, ignore_errors=True)
+    except (OSError, IndexError):
+        pass
+    try:
+        current = task.dst.read_text(encoding="utf-8")
+    except OSError as exc:
+        return Result(task.src, task.dst, "error", f"не удалось перечитать {task.dst.name}: {exc}", time.monotonic() - t0)
+    if current.startswith(MARKER_PREFIX):
+        current = current.split("\n", 1)[1] if "\n" in current else ""
+    current = strip_previous_section(current).rstrip() + "\n\n"
+    recognized = sum(1 for _, t in results if t.strip() and not t.startswith("_"))
+    via = f"{backend.name}, images: {recognized}/{len(images)}"
+    err = write_markdown(task, current + build_section(backend.name, results), source_marker, via=via)
+    if err:
+        return Result(task.src, task.dst, "error", err, time.monotonic() - t0)
+    detail = f"вложенных картинок: {len(images)}, распознано: {recognized}" + (f", ошибок OCR: {failures}" if failures else "")
+    return Result(task.src, task.dst, "ok", detail, time.monotonic() - t0, 0,
+                  {"ocr": backend.name, "images": len(images), "recognized": recognized})
