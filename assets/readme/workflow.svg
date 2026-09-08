@@ -24,16 +24,16 @@
   <!-- step 2 -->
   <rect x="326" y="40" width="210" height="140" rx="16" fill="#14171C" stroke="#262B33" stroke-width="1.5"/>
   <text class="mono" x="346" y="76" font-size="15" fill="#5A606B">02</text>
-  <text class="sans" x="346" y="108" font-size="19" font-weight="600" fill="#F2F0EB">Быстрые действия</text>
-  <text class="sans" x="346" y="134" font-size="15" fill="#9096A0">правый клик →</text>
-  <text class="sans" x="346" y="156" font-size="15" fill="#9096A0">«Конвертировать»</text>
+  <text class="sans" x="346" y="108" font-size="19" font-weight="600" fill="#F2F0EB">Выбрать профиль</text>
+  <text class="sans" x="346" y="134" font-size="15" fill="#9096A0">без OCR, Vision</text>
+  <text class="sans" x="346" y="156" font-size="15" fill="#9096A0">или Docling</text>
 
   <!-- step 3 -->
   <rect x="596" y="40" width="210" height="140" rx="16" fill="#101317" stroke="#2B3138" stroke-width="1.5"/>
   <text class="mono" x="616" y="76" font-size="15" fill="#5A606B">03</text>
   <text class="sans" x="616" y="108" font-size="19" font-weight="600" fill="#F2F0EB">Локально</text>
-  <text class="sans" x="616" y="134" font-size="15" fill="#9096A0">firecrawl-anydoc,</text>
-  <text class="sans" x="616" y="156" font-size="15" fill="#9096A0">без сети</text>
+  <text class="sans" x="616" y="134" font-size="15" fill="#9096A0">firecrawl-anydoc</text>
+  <text class="sans" x="616" y="156" font-size="15" fill="#9096A0">и OCR, без сети</text>
 
   <!-- step 4 -->
   <rect x="866" y="40" width="210" height="140" rx="16" fill="#0A84FF" opacity="0.10" stroke="#0A84FF" stroke-width="1.5"/>

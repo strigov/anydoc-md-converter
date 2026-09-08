@@ -20,7 +20,7 @@
     <text class="sans" x="0" y="54" font-size="48" font-weight="700" fill="#F2F0EB">AnyDoc MD Converter</text>
 
     <text class="sans" x="0" y="96" font-size="20" fill="#B7BCC6">Документы → Markdown прямо в Finder,</text>
-    <text class="sans" x="0" y="124" font-size="20" fill="#B7BCC6">без OCR и без сети — всё локально.</text>
+    <text class="sans" x="0" y="124" font-size="20" fill="#B7BCC6">с опциональным OCR — всё локально.</text>
 
     <g id="badges" transform="translate(0 156)" class="mono" font-size="15">
       <g>
@@ -29,10 +29,10 @@
         <text x="30" y="20" fill="#D7DAE0">офлайн</text>
       </g>
       <g transform="translate(112 0)">
-        <rect x="0" y="0" width="94" height="30" rx="8" fill="#14171C" stroke="#262B33"/>
-        <text x="14" y="20" fill="#D7DAE0">без OCR</text>
+        <rect x="0" y="0" width="132" height="30" rx="8" fill="#14171C" stroke="#262B33"/>
+        <text x="14" y="20" fill="#D7DAE0">3 профиля</text>
       </g>
-      <g transform="translate(222 0)">
+      <g transform="translate(260 0)">
         <rect x="0" y="0" width="66" height="30" rx="8" fill="#14171C" stroke="#262B33"/>
         <text x="14" y="20" fill="#D7DAE0">MIT</text>
       </g>
@@ -55,10 +55,11 @@
 
     <!-- local engine -->
     <rect x="900" y="68" width="150" height="200" rx="18" fill="#101317" stroke="#2B3138" stroke-width="1.5"/>
-    <text x="975" y="150" text-anchor="middle" font-size="17" fill="#F2F0EB">firecrawl</text>
-    <text x="975" y="172" text-anchor="middle" font-size="17" fill="#F2F0EB">anydoc</text>
-    <circle cx="945" cy="200" r="4" fill="#30D158"/>
-    <text x="957" y="205" font-size="15" fill="#9096A0">без сети</text>
+    <text x="975" y="140" text-anchor="middle" font-size="17" fill="#F2F0EB">firecrawl</text>
+    <text x="975" y="162" text-anchor="middle" font-size="17" fill="#F2F0EB">anydoc</text>
+    <text x="975" y="192" text-anchor="middle" font-size="14" fill="#9096A0">+ OCR (опция)</text>
+    <circle cx="945" cy="221" r="4" fill="#30D158"/>
+    <text x="957" y="226" font-size="15" fill="#9096A0">без сети</text>
 
     <!-- connector into output -->
     <g stroke="#30363D" stroke-width="1.5" fill="#30363D">
