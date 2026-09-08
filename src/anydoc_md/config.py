@@ -66,11 +66,6 @@ DEFAULTS: dict[str, Any] = {
     "ocr_languages": ["ru-RU", "en-US"],
     # Разрешение рендера страниц PDF для Vision, dpi.
     "ocr_dpi": 200,
-    # В OCR-режимах: распознавать картинки, вложенные в docx/pptx/xlsx/odt/epub, и дописывать
-    # раздел «Распознанные изображения» в конец .md. Мелкие (логотипы) отсекаются по min_px.
-    "ocr_embedded_images": True,
-    "ocr_embedded_min_px": 300,
-    "ocr_embedded_max_per_doc": 40,
     # Картинки, которые берём в OCR-режимах (в режиме none игнорируются).
     "image_extensions": [".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".webp", ".heic"],
     # Автообновление firecrawl-anydoc: проверка не чаще раза в N дней, после конвертации.

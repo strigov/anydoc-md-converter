@@ -31,13 +31,7 @@ if [ "$PROFILE" = vision ] || [ "$PROFILE" = docling ]; then
   "$LAUNCHER" --no-update --ocr vision "$T/ocr"
   grep -q '(ocr: vision)' "$T/ocr/scan.pdf.md" && grep -qi 'распознанный абзац' "$T/ocr/scan.pdf.md"
   grep -q '(ocr: vision)' "$T/ocr/scan.png.md"
-  # вложенные картинки в docx/pptx
-  FX="$(cd "$(dirname "$0")" && pwd)/fixtures"
-  mkdir -p "$T/emb"; cp "$FX/embedded.docx" "$FX/embedded.pptx" "$T/emb/"
-  "$LAUNCHER" --no-update --ocr vision "$T/emb"
-  grep -q 'images: 1/1' "$T/emb/embedded.docx.md" && grep -q 'Ромашка' "$T/emb/embedded.docx.md"
-  grep -q 'Распознанные изображения' "$T/emb/embedded.pptx.md"
-  echo "vision OK (+embedded)"
+  echo "vision OK"
 fi
 if [ "$PROFILE" = docling ]; then
   rm -f "$T/ocr"/*.md

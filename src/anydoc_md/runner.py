@@ -15,7 +15,7 @@ from typing import Any, Iterable
 
 from . import APP_NAME, VARIANT, __version__
 from .config import log_dir
-from .convert import Result, Task, convert_embedded, convert_ocr, convert_one, should_write
+from .convert import Result, Task, convert_ocr, convert_one, should_write
 from .scan import collect_sources, plan_tasks
 from .system import auto_workers, memory_level_percent
 
@@ -34,11 +34,11 @@ def _worker_init(big_lock) -> None:  # noqa: ANN001
         pass
 
 
-def _worker_run(task: Task, source_marker: bool, embedded: dict | None = None) -> Result:
+def _worker_run(task: Task, source_marker: bool) -> Result:
     if task.big and _BIG_LOCK is not None:
         with _BIG_LOCK:
-            return convert_one(task, source_marker, embedded)
-    return convert_one(task, source_marker, embedded)
+            return convert_one(task, source_marker)
+    return convert_one(task, source_marker)
 
 
 def _ocr_init(backend_name: str, cfg: dict) -> None:
@@ -53,10 +53,6 @@ def _ocr_init(backend_name: str, cfg: dict) -> None:
 
 def _ocr_run(task: Task, pages: list[int], source_marker: bool) -> Result:
     return convert_ocr(task, _OCR_BACKEND, pages, source_marker)
-
-
-def _ocr_embedded_run(task: Task, images: list, source_marker: bool) -> Result:
-    return convert_embedded(task, _OCR_BACKEND, images, source_marker)
 
 
 class Summary:
@@ -184,8 +180,7 @@ def _ocr_workers(cfg: dict, backend: str) -> int:
 def _log_result(r: Result) -> None:
     if r.status == "ok":
         via = f" [{r.extra['ocr']}]" if r.extra.get("ocr") else ""
-        note = f" {r.detail}" if r.detail else ""
-        log.info("ok%s %s -> %s (%.0f КБ, %.2f с)%s", via, r.src, r.dst.name, r.size / 1024, r.seconds, note)
+        log.info("ok%s %s -> %s (%.0f КБ, %.2f с)", via, r.src, r.dst.name, r.size / 1024, r.seconds)
     elif r.status == "needs_ocr":
         log.warning("OCR  %s — %s", r.src, r.detail)
     else:
@@ -253,9 +248,6 @@ def run(inputs: Iterable[Path], cfg: dict[str, Any], *, dry_run: bool = False,
     big_lock = ctx.Lock()
     floor = int(cfg["memory_floor_percent"])
     source_marker = bool(cfg["source_marker"])
-    embedded = None
-    if ocr_backend != "none" and cfg.get("ocr_embedded_images", True):
-        embedded = {"min_px": cfg.get("ocr_embedded_min_px", 300), "max_count": cfg.get("ocr_embedded_max_per_doc", 40)}
     total = len(todo)
     done_count = 0
     next_progress = time.monotonic() + 30
@@ -265,7 +257,7 @@ def run(inputs: Iterable[Path], cfg: dict[str, Any], *, dry_run: bool = False,
                                     max_tasks_per_child=64)
     ocr_pool: ProcessPoolExecutor | None = None
     ocr_pending: set[Future] = set()
-    ocr_queue: list[tuple[str, Task, list]] = [("image", t, []) for t in image_todo]
+    ocr_queue: list[tuple[Task, list[int]]] = [(t, []) for t in image_todo]
     ocr_n = 0
 
     def ensure_ocr_pool() -> ProcessPoolExecutor:
@@ -283,9 +275,8 @@ def run(inputs: Iterable[Path], cfg: dict[str, Any], *, dry_run: bool = False,
         """Выдаём OCR-задачи в OCR-пул, не более 2×процессов в полёте."""
         while ocr_queue and len(ocr_pending) < ensure_ocr_pool()._max_workers * 2:
             _wait_for_memory(floor)
-            kind, t, payload = ocr_queue.pop(0)
-            fn = _ocr_embedded_run if kind == "embedded" else _ocr_run
-            ocr_pending.add(ocr_pool.submit(fn, t, payload, source_marker))
+            t, pages = ocr_queue.pop(0)
+            ocr_pending.add(ocr_pool.submit(_ocr_run, t, pages, source_marker))
 
     def handle(r: Result) -> None:
         nonlocal done_count
@@ -293,13 +284,7 @@ def run(inputs: Iterable[Path], cfg: dict[str, Any], *, dry_run: bool = False,
             log.info("→ OCR %s (%s)", r.src, r.detail)
             task = next((t for t in fast_todo if t.src == r.src), None)
             if task is not None:
-                ocr_queue.append(("image", task, list(r.extra.get("pages", []))))
-                return
-        if r.status == "ok" and r.extra.get("images") and ocr_backend != "none" and not r.extra.get("ocr"):
-            task = next((t for t in fast_todo if t.src == r.src), None)
-            if task is not None:
-                log.info("→ OCR вложенных картинок (%d) %s", len(r.extra["images"]), r.src)
-                ocr_queue.append(("embedded", task, r.extra["images"]))
+                ocr_queue.append((task, list(r.extra.get("pages", []))))
                 return
         summary.add(r)
         done_count += 1
@@ -317,7 +302,7 @@ def run(inputs: Iterable[Path], cfg: dict[str, Any], *, dry_run: bool = False,
                 except StopIteration:
                     exhausted = True
                     break
-                pending.add(fast_pool.submit(_worker_run, t, source_marker, embedded))
+                pending.add(fast_pool.submit(_worker_run, t, source_marker))
             if ocr_queue:
                 pump_ocr()
             waiting = pending | ocr_pending

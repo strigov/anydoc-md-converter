@@ -19,9 +19,6 @@
   "ocr_workers": "auto",
   "ocr_languages": ["ru-RU", "en-US"],
   "ocr_dpi": 200,
-  "ocr_embedded_images": true,
-  "ocr_embedded_min_px": 300,
-  "ocr_embedded_max_per_doc": 40,
   "image_extensions": [".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".webp", ".heic"],
   "auto_update": true,
   "update_interval_days": 7
