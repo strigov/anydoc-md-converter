@@ -1,0 +1,19 @@
+#!/bin/zsh
+# Лаунчер AnyDoc MD Converter (версия без OCR).
+# Ставится в ~/Library/Application Support/AnyDoc MD Converter/bin/anydoc-md;
+# Quick Action и терминал вызывают именно его.
+set -u
+APP_DIR="${ANYDOC_MD_HOME:-$HOME/Library/Application Support/AnyDoc MD Converter}"
+PY="$APP_DIR/venv/bin/python"
+if [ ! -x "$PY" ]; then
+  echo "anydoc-md: движок не установлен ($PY). Запусти «Установить.command» или macos/install.sh" >&2
+  if [ "${1:-}" = "--quick-action" ]; then
+    /usr/bin/osascript -e 'display alert "AnyDoc MD Converter" message "Движок не установлен. Запусти «Установить.command» из папки конвертера." as warning' >/dev/null 2>&1
+  fi
+  exit 1
+fi
+export PYTHONPATH="$APP_DIR/lib${PYTHONPATH:+:$PYTHONPATH}"
+export PYTHONUNBUFFERED=1
+export UV_PYTHON_INSTALL_DIR="$APP_DIR/python"
+# nice 10: конвертация не должна мешать интерактивной работе
+exec /usr/bin/nice -n 10 "$PY" -m anydoc_md "$@"

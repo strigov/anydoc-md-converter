@@ -1,0 +1,20 @@
+{
+  "output_mode": "beside",
+  "mirror_suffix": "_md",
+  "overwrite": "if_newer",
+  "overwrite_foreign": false,
+  "max_workers": "auto",
+  "max_workers_cap": 4,
+  "big_file_mb": 40,
+  "big_zip_file_mb": 6,
+  "memory_floor_percent": 12,
+  "max_file_mb": 500,
+  "extensions": [".doc", ".docx", ".docm", ".ppt", ".pps", ".pot", ".pptx", ".pptm", ".ppsx", ".ppsm",
+                 ".xls", ".xlsx", ".xlsm", ".xlsb", ".odt", ".ods", ".odp", ".rtf", ".epub", ".csv", ".pdf"],
+  "skip_dir_names": [".git", "node_modules", ".Trash", "__MACOSX", ".venv", "venv"],
+  "source_marker": true,
+  "notifications": true,
+  "error_dialog": true,
+  "auto_update": true,
+  "update_interval_days": 7
+}
