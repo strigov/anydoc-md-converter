@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="1200" height="360" viewBox="0 0 1200 360"
+     role="img" aria-labelledby="hero-title hero-desc">
+  <title id="hero-title">AnyDoc MD Converter</title>
+  <desc id="hero-desc">Finder Quick Action, конвертирующее офисные документы в Markdown локально, без OCR и без сети.</desc>
+
+  <defs>
+    <style>
+      .sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="360" rx="28" fill="#0B0D10"/>
+  <rect x="0.75" y="0.75" width="1198.5" height="358.5" rx="27.25" fill="none" stroke="#20242C" stroke-width="1.5"/>
+
+  <g id="title-block" transform="translate(56 68)">
+    <text class="mono" x="0" y="0" font-size="16" letter-spacing="1.5" fill="#8B92A0">FINDER QUICK ACTION · MACOS</text>
+
+    <text class="sans" x="0" y="54" font-size="48" font-weight="700" fill="#F2F0EB">AnyDoc MD Converter</text>
+
+    <text class="sans" x="0" y="96" font-size="20" fill="#B7BCC6">Документы → Markdown прямо в Finder,</text>
+    <text class="sans" x="0" y="124" font-size="20" fill="#B7BCC6">без OCR и без сети — всё локально.</text>
+
+    <g id="badges" transform="translate(0 156)" class="mono" font-size="15">
+      <g>
+        <rect x="0" y="0" width="96" height="30" rx="8" fill="#14171C" stroke="#262B33"/>
+        <circle cx="18" cy="15" r="4" fill="#30D158"/>
+        <text x="30" y="20" fill="#D7DAE0">офлайн</text>
+      </g>
+      <g transform="translate(112 0)">
+        <rect x="0" y="0" width="94" height="30" rx="8" fill="#14171C" stroke="#262B33"/>
+        <text x="14" y="20" fill="#D7DAE0">без OCR</text>
+      </g>
+      <g transform="translate(222 0)">
+        <rect x="0" y="0" width="66" height="30" rx="8" fill="#14171C" stroke="#262B33"/>
+        <text x="14" y="20" fill="#D7DAE0">MIT</text>
+      </g>
+    </g>
+  </g>
+
+  <g id="conversion-flow" class="mono">
+    <!-- source formats card -->
+    <rect x="700" y="68" width="150" height="200" rx="18" fill="#14171C" stroke="#262B33" stroke-width="1.5"/>
+    <text x="716" y="100" font-size="13" letter-spacing="1" fill="#8B92A0">13 ФОРМАТОВ</text>
+    <text x="716" y="140" font-size="15" fill="#D7DAE0">.docx .pdf</text>
+    <text x="716" y="168" font-size="15" fill="#D7DAE0">.xlsx .csv</text>
+    <text x="716" y="196" font-size="15" fill="#D7DAE0">.pptx .odt</text>
+
+    <!-- connector into engine -->
+    <g stroke="#30363D" stroke-width="1.5" fill="#30363D">
+      <path d="M850 168 H890" fill="none" stroke="#30363D"/>
+      <path d="M890 162 L900 168 L890 174 Z"/>
+    </g>
+
+    <!-- local engine -->
+    <rect x="900" y="68" width="150" height="200" rx="18" fill="#101317" stroke="#2B3138" stroke-width="1.5"/>
+    <text x="975" y="150" text-anchor="middle" font-size="17" fill="#F2F0EB">firecrawl</text>
+    <text x="975" y="172" text-anchor="middle" font-size="17" fill="#F2F0EB">anydoc</text>
+    <circle cx="945" cy="200" r="4" fill="#30D158"/>
+    <text x="957" y="205" font-size="15" fill="#9096A0">без сети</text>
+
+    <!-- connector into output -->
+    <g stroke="#30363D" stroke-width="1.5" fill="#30363D">
+      <path d="M1050 168 H1060" fill="none" stroke="#30363D"/>
+      <path d="M1060 162 L1070 168 L1060 174 Z"/>
+    </g>
+
+    <!-- output chip -->
+    <rect x="1070" y="148" width="70" height="40" rx="12" fill="#0A84FF" opacity="0.16" stroke="#0A84FF" stroke-width="1.5"/>
+    <text x="1105" y="174" text-anchor="middle" font-size="20" font-weight="700" fill="#5EA9FF">.md</text>
+  </g>
+</svg>

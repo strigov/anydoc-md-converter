@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="1200" height="220" viewBox="0 0 1200 220"
+     role="img" aria-labelledby="wf-title wf-desc">
+  <title id="wf-title">Как работает конвертация</title>
+  <desc id="wf-desc">Четыре шага: выделить файлы в Finder, вызвать Быстрое действие, локальная обработка без сети, результат и лог.</desc>
+
+  <defs>
+    <style>
+      .sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="220" rx="24" fill="#0B0D10"/>
+  <rect x="0.75" y="0.75" width="1198.5" height="218.5" rx="23.25" fill="none" stroke="#20242C" stroke-width="1.5"/>
+
+  <!-- step 1 -->
+  <rect x="56" y="40" width="210" height="140" rx="16" fill="#14171C" stroke="#262B33" stroke-width="1.5"/>
+  <text class="mono" x="76" y="76" font-size="15" fill="#5A606B">01</text>
+  <text class="sans" x="76" y="108" font-size="19" font-weight="600" fill="#F2F0EB">Выделить файлы</text>
+  <text class="sans" x="76" y="134" font-size="15" fill="#9096A0">файлы или папки</text>
+  <text class="sans" x="76" y="156" font-size="15" fill="#9096A0">в Finder</text>
+
+  <!-- step 2 -->
+  <rect x="326" y="40" width="210" height="140" rx="16" fill="#14171C" stroke="#262B33" stroke-width="1.5"/>
+  <text class="mono" x="346" y="76" font-size="15" fill="#5A606B">02</text>
+  <text class="sans" x="346" y="108" font-size="19" font-weight="600" fill="#F2F0EB">Быстрые действия</text>
+  <text class="sans" x="346" y="134" font-size="15" fill="#9096A0">правый клик →</text>
+  <text class="sans" x="346" y="156" font-size="15" fill="#9096A0">«Конвертировать»</text>
+
+  <!-- step 3 -->
+  <rect x="596" y="40" width="210" height="140" rx="16" fill="#101317" stroke="#2B3138" stroke-width="1.5"/>
+  <text class="mono" x="616" y="76" font-size="15" fill="#5A606B">03</text>
+  <text class="sans" x="616" y="108" font-size="19" font-weight="600" fill="#F2F0EB">Локально</text>
+  <text class="sans" x="616" y="134" font-size="15" fill="#9096A0">firecrawl-anydoc,</text>
+  <text class="sans" x="616" y="156" font-size="15" fill="#9096A0">без сети</text>
+
+  <!-- step 4 -->
+  <rect x="866" y="40" width="210" height="140" rx="16" fill="#0A84FF" opacity="0.10" stroke="#0A84FF" stroke-width="1.5"/>
+  <text class="mono" x="886" y="76" font-size="15" fill="#5EA9FF">04</text>
+  <text class="sans" x="886" y="108" font-size="19" font-weight="600" fill="#F2F0EB">Готово</text>
+  <text class="sans" x="886" y="134" font-size="15" fill="#9096A0">report.md рядом</text>
+  <text class="sans" x="886" y="156" font-size="15" fill="#9096A0">+ лог с итогом</text>
+
+  <!-- connectors -->
+  <g stroke="#30363D" stroke-width="1.5" fill="#30363D">
+    <path d="M266 110 H316" fill="none" stroke="#30363D"/>
+    <path d="M316 104 L326 110 L316 116 Z"/>
+
+    <path d="M536 110 H586" fill="none" stroke="#30363D"/>
+    <path d="M586 104 L596 110 L586 116 Z"/>
+
+    <path d="M806 110 H856" fill="none" stroke="#30363D"/>
+    <path d="M856 104 L866 110 L856 116 Z"/>
+  </g>
+</svg>

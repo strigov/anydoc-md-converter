@@ -99,3 +99,25 @@ def test_plan_zip_threshold_is_separate(tmp_path):
     tasks, _ = plan_tasks([(x, None), (pdf, None)], "beside", "_md", 100, 0, big_zip_bytes=5)
     big = {t.src.name: t.big for t in tasks}
     assert big == {"t.xlsx": True, "t.pdf": False}
+
+
+def test_vision_paragraphs_and_table():
+    from anydoc_md.ocr.vision import _lines_to_paragraphs
+    h = 0.02
+    lines = [
+        (0.90, 0.1, h, "Заголовок"),
+        (0.85, 0.1, h, "Первая строка абзаца, которая продолжа-"),
+        (0.825, 0.1, h, "ется на второй строке."),
+        (0.70, 0.1, h, "Товар"), (0.70, 0.4, h, "Кол-во"), (0.70, 0.7, h, "Цена"),
+        (0.675, 0.1, h, "Болт"), (0.675, 0.4, h, "100"), (0.675, 0.7, h, "12,50"),
+    ]
+    md = _lines_to_paragraphs(lines)
+    assert "Заголовок\n\n" in md
+    assert "продолжается на второй строке." in md
+    assert "| Товар | Кол-во | Цена |" in md and "| Болт | 100 | 12,50 |" in md
+
+
+def test_plan_marks_images(tmp_path):
+    img = touch(tmp_path / "scan.png")
+    tasks, _ = plan_tasks([(img, None)], "beside", "_md", 100, 0, image_extensions=(".png",))
+    assert tasks[0].kind == "image" and tasks[0].dst.name == "scan.md"

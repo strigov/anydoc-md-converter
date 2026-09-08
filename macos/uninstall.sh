@@ -12,8 +12,10 @@ for a in "$@"; do
   esac
 done
 
-TITLES=("Конвертировать в Markdown (без OCR)")
-[ -f "$APP_DIR/installed-workflow.txt" ] && TITLES+=("$(cat "$APP_DIR/installed-workflow.txt")")
+TITLES=("Конвертировать в Markdown (без OCR)" "Конвертировать в Markdown (OCR: Vision)" "Конвертировать в Markdown (OCR: Docling)")
+if [ -f "$APP_DIR/installed-workflow.txt" ]; then
+  while IFS= read -r t; do [ -n "$t" ] && TITLES+=("$t"); done < "$APP_DIR/installed-workflow.txt"
+fi
 [ -n "${ANYDOC_MD_MENU_TITLE:-}" ] && TITLES+=("$ANYDOC_MD_MENU_TITLE")
 for t in "${TITLES[@]}"; do
   [ -d "$SERVICES_DIR/$t.workflow" ] && rm -rf "$SERVICES_DIR/$t.workflow" && echo "удалён Quick Action «$t»"

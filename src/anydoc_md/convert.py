@@ -17,6 +17,7 @@ class Task:
     src: Path
     dst: Path
     big: bool = False
+    kind: str = "doc"  # doc | image
 
 
 @dataclass
@@ -30,9 +31,10 @@ class Result:
     extra: dict = field(default_factory=dict)
 
 
-def marker_line(src: Path) -> str:
+def marker_line(src: Path, via: str = "") -> str:
     name = src.name.replace('"', "'")
-    return f'{MARKER_PREFIX}"{name}" -->\n'
+    tail = f" (ocr: {via})" if via else ""
+    return f'{MARKER_PREFIX}"{name}"{tail} -->\n'
 
 
 def has_marker(path: Path) -> bool:
@@ -66,48 +68,12 @@ def should_write(task: Task, overwrite: str, overwrite_foreign: bool) -> tuple[b
     return False, "актуален (исходник не новее)"
 
 
-def convert_one(task: Task, source_marker: bool) -> Result:
-    """Вызывается в отдельном процессе. Не бросает исключений — всё в Result."""
-    import anydoc  # импорт здесь, чтобы главный процесс мог работать и без движка
-
-    t0 = time.monotonic()
-    try:
-        size = task.src.stat().st_size
-    except OSError as exc:
-        return Result(task.src, task.dst, "error", f"не читается: {exc}")
-
-    try:
-        markdown = anydoc.to_markdown(task.src)  # ocr="reject" — версия без OCR
-    except anydoc.NeedsOcrError as exc:
-        pages = getattr(exc, "pages", None) or []
-        shown = ", ".join(map(str, pages[:20])) + (" …" if len(pages) > 20 else "")
-        return Result(task.src, task.dst, "needs_ocr",
-                      f"нужен OCR (страницы: {shown or '?'})", time.monotonic() - t0, size)
-    except anydoc.EncryptedError:
-        return Result(task.src, task.dst, "error", "зашифрован / защищён паролем", time.monotonic() - t0, size)
-    except anydoc.UnsupportedError as exc:
-        return Result(task.src, task.dst, "error", f"формат не поддерживается: {exc}", time.monotonic() - t0, size)
-    except anydoc.ResourceLimitError as exc:
-        limit = getattr(exc, "limit", None) or "?"
-        return Result(task.src, task.dst, "error",
-                      f"слишком большой/сложный для движка (лимит {limit}) — разбей документ на части",
-                      time.monotonic() - t0, size)
-    except anydoc.MalformedError as exc:
-        return Result(task.src, task.dst, "error", f"повреждён или нечитаем: {exc}", time.monotonic() - t0, size)
-    except anydoc.ConvertError as exc:
-        return Result(task.src, task.dst, "error", f"{type(exc).__name__}: {exc}", time.monotonic() - t0, size)
-    except MemoryError:
-        return Result(task.src, task.dst, "error", "не хватило памяти", time.monotonic() - t0, size)
-    except OSError as exc:
-        return Result(task.src, task.dst, "error", f"ошибка чтения: {exc}", time.monotonic() - t0, size)
-    except Exception as exc:  # noqa: BLE001 — рабочий процесс не должен падать
-        return Result(task.src, task.dst, "error", f"неожиданно: {type(exc).__name__}: {exc}", time.monotonic() - t0, size)
-
+def write_markdown(task: Task, markdown: str, source_marker: bool, via: str = "") -> str | None:
+    """Атомарная запись. Возвращает текст ошибки или None."""
     if not markdown.endswith("\n"):
         markdown += "\n"
     if source_marker:
-        markdown = marker_line(task.src) + markdown
-
+        markdown = marker_line(task.src, via) + markdown
     tmp = task.dst.with_name(task.dst.name + ".anydoc-tmp")
     try:
         task.dst.parent.mkdir(parents=True, exist_ok=True)
@@ -118,7 +84,79 @@ def convert_one(task: Task, source_marker: bool) -> Result:
             tmp.unlink()
         except OSError:
             pass
-        return Result(task.src, task.dst, "error", f"не удалось записать {task.dst.name}: {exc}", time.monotonic() - t0, size)
+        return f"не удалось записать {task.dst.name}: {exc}"
+    return None
 
-    return Result(task.src, task.dst, "ok", "", time.monotonic() - t0, size,
-                  {"chars": len(markdown)})
+
+def convert_one(task: Task, source_marker: bool) -> Result:
+    """Быстрый путь через anydoc. Вызывается в отдельном процессе; не бросает исключений."""
+    import anydoc  # импорт здесь, чтобы главный процесс мог работать и без движка
+
+    t0 = time.monotonic()
+    try:
+        size = task.src.stat().st_size
+    except OSError as exc:
+        return Result(task.src, task.dst, "error", f"не читается: {exc}")
+
+    def fail(detail: str) -> Result:
+        return Result(task.src, task.dst, "error", detail, time.monotonic() - t0, size)
+
+    try:
+        markdown = anydoc.to_markdown(task.src)  # ocr="reject": локально, без облака
+    except anydoc.NeedsOcrError as exc:
+        pages = list(getattr(exc, "pages", None) or [])
+        shown = ", ".join(map(str, pages[:20])) + (" …" if len(pages) > 20 else "")
+        return Result(task.src, task.dst, "needs_ocr", f"нужен OCR (страницы: {shown or '?'})",
+                      time.monotonic() - t0, size, {"pages": pages})
+    except anydoc.EncryptedError:
+        return fail("зашифрован / защищён паролем")
+    except anydoc.UnsupportedError as exc:
+        return fail(f"формат не поддерживается: {exc}")
+    except anydoc.ResourceLimitError as exc:
+        limit = getattr(exc, "limit", None) or "?"
+        return fail(f"слишком большой/сложный для движка (лимит {limit}) — разбей документ на части")
+    except anydoc.MalformedError as exc:
+        return fail(f"повреждён или нечитаем: {exc}")
+    except anydoc.ConvertError as exc:
+        return fail(f"{type(exc).__name__}: {exc}")
+    except MemoryError:
+        return fail("не хватило памяти")
+    except OSError as exc:
+        return fail(f"ошибка чтения: {exc}")
+    except Exception as exc:  # noqa: BLE001 — рабочий процесс не должен падать
+        return fail(f"неожиданно: {type(exc).__name__}: {exc}")
+
+    err = write_markdown(task, markdown, source_marker)
+    if err:
+        return fail(err)
+    return Result(task.src, task.dst, "ok", "", time.monotonic() - t0, size, {"chars": len(markdown)})
+
+
+def convert_ocr(task: Task, backend, pages: list[int], source_marker: bool) -> Result:
+    """Медленный путь: OCR-бэкенд (Vision или Docling). Вызывается в OCR-процессе."""
+    from .ocr import OcrError
+
+    t0 = time.monotonic()
+    try:
+        size = task.src.stat().st_size
+    except OSError as exc:
+        return Result(task.src, task.dst, "error", f"не читается: {exc}")
+    try:
+        if task.kind == "image":
+            markdown = backend.image_to_markdown(task.src)
+        else:
+            markdown = backend.pdf_to_markdown(task.src, pages)
+    except OcrError as exc:
+        return Result(task.src, task.dst, "error", f"OCR ({backend.name}): {exc}", time.monotonic() - t0, size)
+    except MemoryError:
+        return Result(task.src, task.dst, "error", f"OCR ({backend.name}): не хватило памяти", time.monotonic() - t0, size)
+    except Exception as exc:  # noqa: BLE001
+        return Result(task.src, task.dst, "error", f"OCR ({backend.name}) неожиданно: {type(exc).__name__}: {exc}",
+                      time.monotonic() - t0, size)
+    if not markdown.strip():
+        return Result(task.src, task.dst, "error", f"OCR ({backend.name}): текст не распознан", time.monotonic() - t0, size)
+    err = write_markdown(task, markdown, source_marker, via=backend.name)
+    if err:
+        return Result(task.src, task.dst, "error", err, time.monotonic() - t0, size)
+    return Result(task.src, task.dst, "ok", f"через OCR {backend.name}", time.monotonic() - t0, size,
+                  {"chars": len(markdown), "ocr": backend.name})

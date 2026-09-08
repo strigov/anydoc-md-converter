@@ -58,6 +58,16 @@ DEFAULTS: dict[str, Any] = {
     "notifications": True,
     # Показывать диалог с кнопкой «Открыть лог», если были ошибки.
     "error_dialog": True,
+    # OCR (версия 0.2): "none" | "vision" (встроенный OCR macOS) | "docling" (структура + Vision).
+    # Применяется только к PDF, которые anydoc не смог прочитать сам, и к картинкам.
+    "ocr_backend": "none",
+    # Рабочих процессов для OCR: "auto" = 2 для vision, 1 для docling.
+    "ocr_workers": "auto",
+    "ocr_languages": ["ru-RU", "en-US"],
+    # Разрешение рендера страниц PDF для Vision, dpi.
+    "ocr_dpi": 200,
+    # Картинки, которые берём в OCR-режимах (в режиме none игнорируются).
+    "image_extensions": [".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".webp", ".heic"],
     # Автообновление firecrawl-anydoc: проверка не чаще раза в N дней, после конвертации.
     "auto_update": True,
     "update_interval_days": 7,
@@ -95,8 +105,13 @@ def load_config(path: Path | None = None) -> dict[str, Any]:
         for key, value in user.items():
             if key in cfg:
                 cfg[key] = value
-    cfg["extensions"] = tuple(e.lower() if e.startswith(".") else "." + e.lower() for e in cfg["extensions"])
+    cfg["extensions"] = _norm_ext(cfg["extensions"])
+    cfg["image_extensions"] = _norm_ext(cfg["image_extensions"])
     return cfg
+
+
+def _norm_ext(items) -> tuple[str, ...]:
+    return tuple(e.lower() if e.startswith(".") else "." + e.lower() for e in items)
 
 
 def write_default_config(path: Path | None = None) -> Path:

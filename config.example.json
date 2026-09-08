@@ -15,6 +15,11 @@
   "source_marker": true,
   "notifications": true,
   "error_dialog": true,
+  "ocr_backend": "none",
+  "ocr_workers": "auto",
+  "ocr_languages": ["ru-RU", "en-US"],
+  "ocr_dpi": 200,
+  "image_extensions": [".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".webp", ".heic"],
   "auto_update": true,
   "update_interval_days": 7
 }

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Генерирует бандл Quick Action (Automator Services workflow) для Finder.
 
-Использование: quick-action.py ВЫХОДНАЯ_ПАПКА "Название пункта меню" /путь/к/anydoc-md
+Использование: quick-action.py ВЫХОДНАЯ_ПАПКА "Название пункта меню" /путь/к/anydoc-md ["--ocr vision"]
 Работает на системном python3 (3.9), сторонних модулей не требует.
 """
 import plistlib
@@ -10,7 +10,7 @@ import uuid
 from pathlib import Path
 
 
-def build(out_dir: Path, menu_title: str, launcher: str) -> Path:
+def build(out_dir: Path, menu_title: str, launcher: str, extra_args: str = "") -> Path:
     bundle = out_dir / f"{menu_title}.workflow"
     contents = bundle / "Contents"
     contents.mkdir(parents=True, exist_ok=True)
@@ -25,7 +25,7 @@ if [ ! -x "$LAUNCHER" ]; then
   /usr/bin/osascript -e 'display alert "AnyDoc MD Converter" message "Движок не установлен: нет '"$LAUNCHER"'. Запусти «Установить.command»." as warning' >/dev/null 2>&1
   exit 0
 fi
-"$LAUNCHER" --quick-action "$@" >/dev/null 2>&1
+"$LAUNCHER" --quick-action {extra_args} "$@" >/dev/null 2>&1
 exit 0
 '''
 
@@ -107,6 +107,6 @@ exit 0
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
+    if len(sys.argv) not in (4, 5):
         sys.exit(__doc__)
-    print(build(Path(sys.argv[1]), sys.argv[2], sys.argv[3]))
+    print(build(Path(sys.argv[1]), sys.argv[2], sys.argv[3], sys.argv[4] if len(sys.argv) == 5 else ""))

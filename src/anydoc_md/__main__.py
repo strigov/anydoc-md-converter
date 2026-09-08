@@ -22,6 +22,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--mode", choices=["beside", "mirror"], help="куда класть .md (переопределяет config)")
     p.add_argument("--overwrite", choices=["never", "if_newer", "always"], help="политика перезаписи")
     p.add_argument("-j", "--workers", type=int, help="число рабочих процессов (переопределяет auto)")
+    p.add_argument("--ocr", choices=["none", "vision", "docling"],
+                   help="OCR для сканов и картинок: vision (встроенный macOS) или docling (структура + Vision)")
     p.add_argument("--no-update", action="store_true", help="не запускать фоновую проверку обновлений")
     p.add_argument("--update", action="store_true", help="обновить движок firecrawl-anydoc и выйти")
     p.add_argument("--quiet", action="store_true", help="(с --update) без вывода")
@@ -51,6 +53,19 @@ def main(argv: list[str] | None = None) -> int:
         cfg["overwrite"] = args.overwrite
     if args.workers:
         cfg["max_workers"] = args.workers
+    if args.ocr:
+        cfg["ocr_backend"] = args.ocr
+    if cfg["ocr_backend"] != "none":
+        from .ocr import backend_available
+        ok, why = backend_available(cfg["ocr_backend"])
+        if not ok:
+            msg = (f"OCR-бэкенд «{cfg['ocr_backend']}» не установлен ({why}). "
+                   f"Запусти «Установить.command» и выбери профиль с OCR.")
+            if args.quick_action:
+                from .runner import notify
+                notify(APP_NAME, msg, "OCR недоступен")
+            print(msg, file=sys.stderr)
+            return 2
 
     if not args.paths:
         build_parser().print_help()

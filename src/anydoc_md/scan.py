@@ -56,7 +56,8 @@ def collect_sources(inputs: Iterable[Path], extensions: tuple[str, ...], skip_di
 
 def plan_tasks(sources: list[tuple[Path, Path | None]], output_mode: str, mirror_suffix: str,
                big_file_bytes: int, max_file_bytes: int,
-               big_zip_bytes: int | None = None) -> tuple[list[Task], list[tuple[Path, str]]]:
+               big_zip_bytes: int | None = None,
+               image_extensions: tuple[str, ...] = ()) -> tuple[list[Task], list[tuple[Path, str]]]:
     """Строим задачи. Коллизии имён (report.docx + report.pdf) → report.docx.md / report.pdf.md."""
     skipped: list[tuple[Path, str]] = []
     if big_zip_bytes is None:
@@ -90,8 +91,10 @@ def plan_tasks(sources: list[tuple[Path, Path | None]], output_mode: str, mirror
                 skipped.append((src, "пустой файл"))
                 continue
             dst = dst_base.with_name(dst_base.name + ".md") if collide else dst_base.with_suffix(".md")
-            threshold = big_zip_bytes if src.suffix.lower() in ZIP_EXTENSIONS else big_file_bytes
-            tasks.append(Task(src=src, dst=dst, big=size >= threshold))
+            ext = src.suffix.lower()
+            threshold = big_zip_bytes if ext in ZIP_EXTENSIONS else big_file_bytes
+            kind = "image" if ext in image_extensions else "doc"
+            tasks.append(Task(src=src, dst=dst, big=size >= threshold, kind=kind))
     # большие файлы — в конец, чтобы мелочь не ждала
     tasks.sort(key=lambda t: (t.big, str(t.src)))
     return tasks, skipped
