@@ -2,7 +2,7 @@
      width="1200" height="360" viewBox="0 0 1200 360"
      role="img" aria-labelledby="hero-title hero-desc">
   <title id="hero-title">AnyDoc MD Converter</title>
-  <desc id="hero-desc">Finder Quick Action, конвертирующее офисные документы в Markdown локально, без OCR и без сети.</desc>
+  <desc id="hero-desc">Finder Quick Action, конвертирующее офисные документы в Markdown локально, с опциональным OCR и без сети.</desc>
 
   <defs>
     <style>

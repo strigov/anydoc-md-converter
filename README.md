@@ -103,7 +103,7 @@ anydoc-md --version
 | Таблицы | простые: строки с несколькими фрагментами на одной высоте собираются в таблицу | да, TableFormer восстанавливает ячейки |
 | Смешанные PDF (текст + сканы) | текстовые страницы через PDFKit, сканы через OCR, с пометкой страниц | весь документ через Docling |
 | Скорость на M-серии | 0,5–1 с на страницу | ~10 с прогрев моделей, затем 1–2 с на страницу |
-| Память | ~100 МБ на процесс | 1,5–2 ГБ на процесс |
+| Память | ~300 МБ на процесс | 1,5–2 ГБ на процесс |
 | Языки | `ocr_languages`, по умолчанию ru-RU + en-US, macOS 13+ для русского | те же |
 
 Первая строка `.md` после OCR: `<!-- anydoc-md: converted from "scan.pdf" (ocr: vision) -->`.
@@ -170,7 +170,7 @@ firecrawl-anydoc`). Обновление берёт файловый lock и ж�
 ## Удаление
 
 `Удалить.command` или `zsh macos/uninstall.sh [--keep-config] [--keep-logs]`. Удаляет папку в
-Application Support, Quick Action, симлинк и логи. Сконвертированные `.md` остаются.
+Application Support, все Quick Actions, симлинк и логи. Сконвертированные `.md` остаются.
 
 ## Структура проекта
 
@@ -189,6 +189,8 @@ src/anydoc_md/                          — конвертер
   ocr/        — OCR-бэкенды: vision.py (Vision + Quartz/PDFKit), docling_backend.py
 tests/test_scan.py                      — юнит-тесты (pytest, движок не нужен)
 tests/smoke.sh                          — интеграционный прогон на установленном движке
+config.example.json                     — все ключи config.json со значениями по умолчанию
+assets/readme/                          — картинки для этого README
 ```
 
 Тесты: `python3 -m pytest tests` (нужен Python ≥3.10) и `zsh tests/smoke.sh` после установки.
